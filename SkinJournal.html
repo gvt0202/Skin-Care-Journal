@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Skin Journal"/>
+<title>Skin Journal 🌿</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:#0a0a0a;font-family:system-ui,-apple-system,sans-serif;color:#f0e6d3;overscroll-behavior:none;min-height:100vh}
+  input,button,textarea{font-family:inherit}
+  ::-webkit-scrollbar{display:none}
+
+  .page{min-height:100vh;background:#0a0a0a;padding-bottom:80px}
+  .header{background:linear-gradient(180deg,#141008,#0a0a0a);padding:22px 16px 14px;border-bottom:1px solid rgba(201,169,110,0.08)}
+  .header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  .title{font-size:22px;color:#f0e6d3;font-weight:300}
+  .subtitle{color:#555;font-size:11px;margin-top:2px}
+  .scores{display:flex;gap:8px;margin-top:14px}
+  .score-card{flex:1;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:10px 6px;text-align:center}
+  .score-label{font-size:9px;color:#555;margin-top:3px}
+  .score-val{height:50px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+
+  .tabs{display:flex;background:#0a0a0a;border-bottom:1px solid rgba(255,255,255,0.05);position:sticky;top:0;z-index:10}
+  .tab{flex:1;padding:13px 2px;background:none;border:none;border-bottom:2px solid transparent;color:#444;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s}
+  .tab.active{color:#c9a96e;border-bottom-color:#c9a96e}
+
+  .content{padding:18px 16px}
+  .section{margin-bottom:24px}
+  .section-label{font-size:10px;letter-spacing:2px;color:#c9a96e;margin-bottom:14px;display:block}
+  .section-label.green{color:#7eb8a0}
+
+  .card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .card.gold{border-color:rgba(201,169,110,0.2);background:rgba(201,169,110,0.06)}
+
+  .check-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.02);border-radius:12px;margin-bottom:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.05);transition:all 0.25s;user-select:none}
+  .check-item.checked{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.25)}
+  .check-item.disabled{opacity:0.35;cursor:not-allowed}
+  .check-circle{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0a0a0a;transition:all 0.25s}
+  .check-circle.checked{background:#c9a96e;border-color:#c9a96e}
+  .check-name{font-size:13px;color:#888;font-weight:500}
+  .check-name.checked{color:#f0e6d3}
+  .check-tip{font-size:10px;color:#c9a96e;margin-top:2px}
+  .not-tonight{font-size:9px;color:#444;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;margin-left:auto;flex-shrink:0}
+
+  .progress-bar-wrap{height:5px;background:#1a1a1a;border-radius:10px;overflow:hidden;margin:8px 0}
+  .progress-bar{height:100%;background:linear-gradient(90deg,#c9a96e,#f0e6d3);border-radius:10px;transition:width 0.8s ease}
+
+  .btn{background:linear-gradient(135deg,#c9a96e,#9a7040);border:none;border-radius:10px;padding:11px 20px;color:#0a0a0a;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px}
+  .btn-ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#888;font-size:12px;cursor:pointer;flex:1}
+  .btn-row{display:flex;gap:10px;margin-top:12px}
+  .inp{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#f0e6d3;font-size:13px;outline:none;width:100%}
+  textarea.inp{resize:none;height:65px}
+
+  .weather-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:2px}
+  .weather-tip{flex-shrink:0;max-width:200px;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:flex-start;font-size:10px;line-height:1.4}
+  .weather-tip.warn{background:rgba(201,100,100,0.08);border:1px solid rgba(201,100,100,0.2);color:#c97e6e}
+  .weather-tip.info{background:rgba(126,184,160,0.08);border:1px solid rgba(126,184,160,0.2);color:#7eb8a0}
+
+  .bar-chart{display:flex;gap:6px;align-items:flex-end;height:90px}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .bar{width:100%;border-radius:6px;transition:height 0.6s;min-height:5px}
+  .bar-pct{font-size:9px;color:#555}
+  .bar-lbl{font-size:9px}
+
+  .heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+  .heat-cell{aspect-ratio:1;border-radius:4px}
+  .heat-legend{display:flex;gap:6px;align-items:center;font-size:9px;color:#444}
+  .heat-box{width:10px;height:10px;border-radius:2px}
+
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+  .stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 16px}
+  .stat-icon{font-size:20px;margin-bottom:6px}
+  .stat-val{font-size:18px;font-weight:600}
+  .stat-lbl{font-size:10px;color:#555;margin-top:2px}
+
+  .milestone{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;transition:opacity 0.3s}
+  .milestone.locked{opacity:0.35}
+  .ms-circle{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .ms-circle.done{background:rgba(201,169,110,0.12);border-color:#c9a96e}
+  .ms-title{font-size:13px;font-weight:500;color:#555}
+  .ms-title.done{color:#f0e6d3}
+  .ms-desc{font-size:11px;color:#555;margin-top:2px}
+  .ms-badge{font-size:9px;background:rgba(201,169,110,0.1);color:#c9a96e;border-radius:4px;padding:2px 8px;margin-top:4px;display:inline-block}
+  .now-badge{margin-left:6px;font-size:9px;background:#c9a96e;color:#0a0a0a;border-radius:4px;padding:2px 6px;font-weight:700}
+  .ms-week{font-size:9px;color:#444}
+
+  .badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .badge-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;opacity:0.35;transition:opacity 0.3s}
+  .badge-card.unlocked{opacity:1;background:rgba(201,169,110,0.07);border-color:rgba(201,169,110,0.25)}
+  .badge-icon{font-size:22px}
+  .badge-name{font-size:12px;font-weight:500;color:#555}
+  .badge-name.unlocked{color:#f0e6d3}
+  .badge-desc{font-size:10px;color:#555}
+
+  .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .photo-item{border-radius:10px;overflow:hidden;position:relative}
+  .photo-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+  .photo-wk{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);padding:3px 8px;font-size:9px;color:#f0e6d3}
+
+  .empty-state{text-align:center;padding:28px;border-style:dashed}
+  .empty-icon{font-size:32px;margin-bottom:8px}
+  .empty-text{font-size:13px;color:#555}
+
+  .rating-row{display:flex;gap:6px;margin:6px 0}
+  .rating-btn{flex:1;padding:7px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#555;font-size:12px;cursor:pointer;transition:all 0.2s}
+  .rating-hint{display:flex;justify-content:space-between;font-size:9px;color:#444;margin-top:3px}
+
+  .conflict-ok{background:rgba(100,201,130,0.08);border:1px solid rgba(100,201,130,0.25);border-radius:14px;padding:18px;margin-bottom:16px}
+  .conflict-err{background:rgba(201,100,100,0.08);border:1px solid rgba(201,100,100,0.25);border-radius:14px;padding:18px;margin-bottom:16px}
+  .conflict-item{display:flex;gap:8px;margin-bottom:6px;font-size:12px;color:#e07070}
+  .conflict-tip{margin-top:12px;font-size:11px;color:#666;line-height:1.5;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 12px}
+
+  .ingredient-row{display:flex;justify-content:space-between;align-items:center}
+  .ing-name{font-size:12px;color:#f0e6d3;font-weight:500}
+  .ing-note{font-size:10px;color:#555;margin-top:2px}
+  .ing-tag{font-size:9px;border-radius:5px;padding:3px 8px}
+
+  .week-row{border-radius:14px;padding:13px 16px;margin-bottom:10px}
+  .week-row.today{background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.25)}
+  .week-row.other{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)}
+  .week-day{font-size:14px;font-weight:600}
+  .today-pill{font-size:8px;background:#c9a96e;color:#0a0a0a;border-radius:4px;padding:2px 6px;font-weight:700;margin-left:8px}
+  .week-label{font-size:10px;color:#555}
+  .week-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .wtag{font-size:9px;border-radius:5px;padding:3px 8px}
+
+  .rule-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+  .rule-icon{font-size:14px;flex-shrink:0}
+  .rule-text{font-size:12px;color:#777;line-height:1.5}
+
+  .notif{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:1000;background:#1c1c1c;border:1px solid rgba(201,169,110,0.4);border-radius:12px;padding:12px 20px;text-align:center;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.5);pointer-events:none}
+  .notif-title{font-size:13px;color:#c9a96e;font-weight:600}
+  .notif-msg{font-size:11px;color:#888;margin-top:3px}
+
+  .onboard{min-height:100vh;background:#0a0a0a;display:flex;align-items:center;justify-content:center;padding:24px}
+  .onboard-inner{max-width:340px;width:100%;text-align:center}
+  .onboard-emoji{font-size:52px;margin-bottom:12px}
+  .onboard-title{font-size:28px;color:#f0e6d3;font-weight:300;margin-bottom:6px}
+  .onboard-desc{font-size:13px;color:#555;margin-bottom:32px;line-height:1.7}
+  .feature-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .ftag{font-size:10px;color:#555;background:rgba(255,255,255,0.03);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.06)}
+
+  .rem-panel{background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.2);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .rem-row{display:flex;gap:12px}
+  .rem-col{flex:1}
+  .rem-lbl{font-size:10px;color:#666;margin-bottom:4px}
+
+  .note-diary{margin-bottom:12px}
+  .dot-row{display:flex;gap:3px}
+  .dot{width:8px;height:8px;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const DEFAULT_PRODUCTS = {
+  am:[
+    {id:"cleanser",    name:"CeraVe Foaming Cleanser",     emoji:"🧼", tip:"Gentle foam, 30 sec massage, lukewarm water"},
+    {id:"vitc",        name:"Minimalist 16% Vitamin C",     emoji:"✨", tip:"2-3 drops, pat gently, wait 3 mins after"},
+    {id:"moisturiser", name:"CeraVe Oil Control Gel Cream", emoji:"💧", tip:"Pea-sized amount, focus on dry patches first"},
+    {id:"spf",         name:"Beauty of Joseon Rice SPF",    emoji:"☀️", tip:"Always last step! Reapply every 2hrs outdoors"},
+  ],
+  pm:[
+    {id:"cleanser_pm",   name:"CeraVe Foaming Cleanser",     emoji:"🧼", tip:"Double cleanse if wearing sunscreen"},
+    {id:"sal",           name:"Minimalist 2% Salicylic Acid", emoji:"🔬", tip:"2-3x/week only. Skip on retinol nights"},
+    {id:"retinol",       name:"Minimalist 0.3% Retinol",      emoji:"🌙", tip:"3-4x/week. Never same night as salicylic!"},
+    {id:"moisturiser_pm",name:"CeraVe Oil Control Gel Cream", emoji:"💧", tip:"Layer generously after retinol"},
+  ]
+};
+function loadProducts(){
+  try{const v=localStorage.getItem("sj_products");return v?JSON.parse(v):JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));}
+  catch{return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));}
+}
+let PRODUCTS=loadProducts();
+const WEEKLY={
+  Mon:{sal:false,retinol:true, label:"Retinol Night"},
+  Tue:{sal:false,retinol:false,label:"Rest Night"},
+  Wed:{sal:true, retinol:false,label:"Salicylic Night"},
+  Thu:{sal:false,retinol:true, label:"Retinol Night"},
+  Fri:{sal:false,retinol:false,label:"Rest Night"},
+  Sat:{sal:true, retinol:false,label:"Salicylic Night"},
+  Sun:{sal:false,retinol:true, label:"Retinol Night"},
+};
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MILESTONES=[
+  {week:1, title:"Routine Established",desc:"Products absorbed without irritation", icon:"🌱",badge:"Beginner"},
+  {week:3, title:"Oil Controlled",     desc:"T-zone noticeably less oily",          icon:"💫",badge:"Consistent"},
+  {week:4, title:"Month 1 Complete",   desc:"Completed your first full month!",      icon:"🥇",badge:"Committed"},
+  {week:6, title:"Pores Refined",      desc:"Visible pore size reduction",          icon:"🔍",badge:"Dedicated"},
+  {week:8, title:"Glow Unlocked",      desc:"Brighter, more even skin tone",        icon:"✨",badge:"Glowing"},
+  {week:10,title:"Spots Fading",       desc:"Dark spots visibly lighter",           icon:"🌤️",badge:"Transformer"},
+  {week:12,title:"Skin Transformed",   desc:"Fine lines reduced, glowing skin",     icon:"🌟",badge:"Skin Master"},
+];
+const BADGES=[
+  {id:"first",  icon:"🌱",label:"First Step",   desc:"Completed first routine"},
+  {id:"s3",     icon:"🔥",label:"3-Day Streak", desc:"3 days consistent"},
+  {id:"s7",     icon:"⚡",label:"Week Warrior", desc:"7 days in a row"},
+  {id:"s14",    icon:"💎",label:"Diamond Skin", desc:"14 days straight"},
+  {id:"s30",    icon:"👑",label:"Skin Royalty", desc:"30 day streak"},
+  {id:"perfect",icon:"⭐",label:"Perfect Day",  desc:"100% in a single day"},
+  {id:"m1",     icon:"🥇",label:"Month 1 Done", desc:"28 days in!"},
+  {id:"champ",  icon:"🏆",label:"Champion",     desc:"Full 12 week journey"},
+];
+const CONFLICTS={
+  "retinol":       ["salicylic acid","aha","bha","vitamin c","benzoyl peroxide","glycolic acid"],
+  "salicylic acid":["retinol","vitamin c","aha","glycolic acid","lactic acid"],
+  "vitamin c":     ["retinol","salicylic acid","niacinamide","aha","bha"],
+  "niacinamide":   ["vitamin c"],
+  "aha":           ["retinol","salicylic acid","vitamin c","bha"],
+  "bha":           ["retinol","vitamin c","aha"],
+  "glycolic acid": ["retinol","salicylic acid","vitamin c"],
+  "lactic acid":   ["retinol","salicylic acid"],
+};
+const WEATHER=[
+  {icon:"💦",text:"High humidity today — your gel cream is perfect, skip heavier formulas",type:"info"},
+  {icon:"☀️",text:"UV index 8 — reapply SPF every 2 hours when outdoors",type:"warn"},
+  {icon:"🌧️",text:"Monsoon season — SPF washes off faster, reapply more often",type:"warn"},
+  {icon:"🧊",text:"31°C heat — store Vitamin C in a cool spot to prevent oxidation",type:"info"},
+];
+const RULES=[
+  ["⛔","Never use Salicylic + Retinol on the same night"],
+  ["☀️","Vitamin C is AM only — always finish with SPF"],
+  ["🌙","Retinol is PM only — always moisturise right after"],
+  ["🌧️","Mumbai monsoon: SPF washes off faster, reapply outdoors"],
+  ["💦","High humidity: your gel cream is enough, don't over-layer"],
+  ["⏳","8-12 weeks minimum before judging results — trust the process"],
+  ["🧊","Store Vitamin C cool — Mumbai heat oxidises it faster"],
+];
+
+// ── Storage ───────────────────────────────────────────────────────────────────
+function load(k,def){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def;}catch{return def;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function todayKey(){return new Date().toISOString().split("T")[0];}
+function dayName(){return["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];}
+function scoreOf(log){
+  if(!log)return 0;
+  const all=[...PRODUCTS.am,...PRODUCTS.pm];
+  return Math.round(all.filter(p=>log[p.id]).length/all.length*100);
+}
+function streak(logs){
+  let s=0,d=new Date();
+  for(let i=0;i<400;i++){
+    const k=d.toISOString().split("T")[0];
+    if(scoreOf(logs[k])>=50){s++;d.setDate(d.getDate()-1);}else break;
+  }
+  return s;
+}
+function weekNum(start){
+  if(!start)return 1;
+  return Math.min(Math.floor((Date.now()-new Date(start).getTime())/(7*86400000))+1,12);
+}
+function daysIn(start){
+  if(!start)return 0;
+  return Math.max(0,Math.floor((Date.now()-new Date(start).getTime())/86400000));
+}
+function conflictCheck(input){
+  const q=input.toLowerCase().trim();
+  for(const[k,v]of Object.entries(CONFLICTS)){if(q.includes(k))return{found:k,list:v};}
+  return null;
+}
+
+// ── SVG Ring ──────────────────────────────────────────────────────────────────
+function ring(score,size,stroke,color){
+  const r=(size-stroke)/2,circ=2*Math.PI*r,off=circ-(score/100)*circ;
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#222" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+      stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"
+      style="transition:stroke-dashoffset 1s ease"/>
+  </svg>`;
+}
+
+// ── App State ─────────────────────────────────────────────────────────────────
+const state={
+  screen: load("sj_start",null)?"app":"onboard",
+  tab:"today",
+  activeDate: todayKey(),
+  start: load("sj_start",todayKey()),
+  logs:  load("sj_logs",{}),
+  photos:load("sj_photos",{}),
+  notes: load("sj_notes",{}),
+  remAM: load("sj_remAM","07:00"),
+  remPM: load("sj_remPM","21:00"),
+  showRem:false,
+  showPhoto:false,
+  showNote:false,
+  oilRating:3,
+  glowRating:3,
+  noteText:"",
+  conflictInput:"",
+  conflictResult:undefined,
+  notif:null,
+  justChecked:null,
+};
+
+function setState(patch){Object.assign(state,patch);render();}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById("app").innerHTML=buildApp();
+  attachEvents();
+}
+
+function buildApp(){
+  if(state.screen==="onboard")return buildOnboard();
+  return buildMain();
+}
+
+function buildOnboard(){
+  return `<div class="onboard">
+    <div class="onboard-inner">
+      <div class="onboard-emoji">🌿</div>
+      <div class="onboard-title">Skin Journal</div>
+      <div class="onboard-desc">Track your routine, log your skin, earn badges and watch your glow build over 12 weeks.</div>
+      <div style="margin-bottom:8px;color:#888;font-size:12px;text-align:left">When did you start your routine?</div>
+      <input class="inp" type="date" id="startInp" value="${state.start}" max="${todayKey()}" style="margin-bottom:16px"/>
+      <button class="btn" id="beginBtn">Begin My Journey →</button>
+      <div class="feature-tags">
+        ${["✓ Data saved on device","✓ Smart reminders","✓ Streaks & badges","✓ Photo journal","✓ Conflict checker"].map(t=>`<span class="ftag">${t}</span>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildMain(){
+  const today=todayKey(),day=dayName();
+  const activeDate=state.activeDate||today;
+  const isToday=activeDate===today;
+  const activeDayName=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(activeDate+"T00:00:00").getDay()];
+  const tlog=state.logs[activeDate]||{};
+  const wk=weekNum(state.start),days=daysIn(state.start);
+  const ts=scoreOf(tlog),str=streak(state.logs);
+  const plan=WEEKLY[activeDayName]||{sal:false,retinol:false,label:"Rest Night"};
+  const allS=Object.keys(state.logs).map(k=>scoreOf(state.logs[k]));
+  const avg=allS.length?Math.round(allS.reduce((a,b)=>a+b,0)/Math.max(days,1)):0;
+  const unlocked=BADGES.filter(b=>{
+    if(b.id==="first")  return Object.keys(state.logs).length>=1;
+    if(b.id==="s3")     return str>=3;
+    if(b.id==="s7")     return str>=7;
+    if(b.id==="s14")    return str>=14;
+    if(b.id==="s30")    return str>=30;
+    if(b.id==="perfect")return Object.values(state.logs).some(l=>scoreOf(l)===100);
+    if(b.id==="m1")     return days>=28;
+    if(b.id==="champ")  return days>=84;
+    return false;
+  });
+
+  return `
+  ${state.notif?`<div class="notif"><div class="notif-title">${state.notif.title}</div><div class="notif-msg">${state.notif.msg}</div></div>`:""}
+  <div class="page">
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="title">Skin Journal</div>
+          <div class="subtitle">Day ${days+1} · Week ${wk}/12 · Mumbai 🌧️</div>
+        </div>
+        <button class="btn-ghost" id="remBtn" style="padding:7px 12px;font-size:11px">🔔 Reminders</button>
+      </div>
+      ${state.showRem?`<div class="rem-panel">
+        <div style="font-size:10px;color:#c9a96e;letter-spacing:2px;margin-bottom:10px">SET REMINDER TIMES</div>
+        <div class="rem-row">
+          <div class="rem-col"><div class="rem-lbl">☀️ Morning</div><input class="inp" type="time" id="remAMinp" value="${state.remAM}" style="padding:8px 10px"/></div>
+          <div class="rem-col"><div class="rem-lbl">🌙 Night</div><input class="inp" type="time" id="remPMinp" value="${state.remPM}" style="padding:8px 10px"/></div>
+        </div>
+        <div style="font-size:10px;color:#444;margin-top:8px">Keep app open for reminders to fire</div>
+      </div>`:""}
+      <div class="weather-scroll">
+        ${WEATHER.map(w=>`<div class="weather-tip ${w.type}"><span style="font-size:13px;flex-shrink:0">${w.icon}</span><span>${w.text}</span></div>`).join("")}
+      </div>
+      <div class="scores">
+        <div class="score-card">
+          <div style="position:relative;display:inline-block">${ring(ts,50,4,"#c9a96e")}
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:600;color:#c9a96e">${ts}%</div>
+          </div>
+          <div class="score-label">Today</div>
+        </div>
+        <div class="score-card">
+          <div style="position:relative;display:inline-block">${ring(avg,50,4,"#7eb8a0")}
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:600;color:#7eb8a0">${avg}%</div>
+          </div>
+          <div class="score-label">Overall</div>
+        </div>
+        <div class="score-card"><div class="score-val" style="color:#c97eb8">${str}🔥</div><div class="score-label">Streak</div></div>
+        <div class="score-card"><div class="score-val" style="color:#b8c97e">${unlocked.length}/${BADGES.length}</div><div class="score-label">Badges</div></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      ${[["today","Today"],["progress","Progress"],["log","Log"],["checker","Checker"],["schedule","Schedule"],["edit","✏️ Edit"]].map(([t,l])=>`<button class="tab${state.tab===t?" active":""}" data-tab="${t}">${l}</button>`).join("")}
+    </div>
+
+    <div class="content">
+      ${state.tab==="today"    ?buildToday(tlog,plan,ts,activeDate,wk,isToday):""}
+      ${state.tab==="progress" ?buildProgress(today,wk,days,str,avg,unlocked):""}
+      ${state.tab==="log"      ?buildLog():""}
+      ${state.tab==="checker"  ?buildChecker():""}
+      ${state.tab==="schedule" ?buildSchedule(activeDayName):""}
+      ${state.tab==="edit"     ?buildEdit():""}
+    </div>
+  </div>`;
+}
+
+function buildToday(tlog,plan,ts,activeDate,wk,isToday){
+  const today=todayKey();
+  return `
+  <!-- Date Picker Bar -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px 14px">
+    <div style="flex:1">
+      <div style="font-size:10px;color:#555;margin-bottom:4px;letter-spacing:1px">VIEWING DATE</div>
+      <input type="date" id="datePicker" value="${activeDate}" max="${today}"
+        style="background:transparent;border:none;color:${isToday?"#c9a96e":"#f0e6d3"};font-size:14px;font-weight:500;outline:none;width:100%;font-family:inherit"/>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      ${isToday
+        ?`<span style="font-size:9px;background:#c9a96e;color:#0a0a0a;border-radius:4px;padding:3px 8px;font-weight:700">TODAY</span>`
+        :`<button id="goTodayBtn" style="font-size:10px;background:rgba(201,169,110,0.1);color:#c9a96e;border:1px solid rgba(201,169,110,0.3);border-radius:6px;padding:4px 10px;cursor:pointer">Go to Today</button>`
+      }
+    </div>
+  </div>
+
+  ${!isToday?`<div style="font-size:11px;color:#888;background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06)">
+    📅 Viewing <b style="color:#f0e6d3">${new Date(activeDate+"T00:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</b> — you can still check/uncheck items for this date
+  </div>`:""}
+
+  <div class="card gold" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:10px;color:#c9a96e;margin-bottom:2px">TONIGHT</div>
+      <div style="font-size:13px">${plan.label}</div>
+    </div>
+    <div style="font-size:10px;text-align:right">
+      ${plan.sal?`<div style="color:#c97eb8">● Salicylic on</div>`:""}
+      ${plan.retinol?`<div style="color:#c9a96e">● Retinol on</div>`:""}
+      ${!plan.sal&&!plan.retinol?`<div style="color:#555">● Basics only</div>`:""}
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="section-label green">☀️ MORNING ROUTINE</span>
+    ${PRODUCTS.am.map(p=>{
+      const ch=!!tlog[p.id];
+      return `<div class="check-item${ch?" checked":""}" data-toggle="${p.id}">
+        <div class="check-circle${ch?" checked":" "}">${ch?"✓":""}</div>
+        <div style="flex:1">
+          <div class="check-name${ch?" checked":""}">${p.emoji} ${p.name}</div>
+          ${ch?`<div class="check-tip">${p.tip}</div>`:""}
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+
+  <div class="section">
+    <span class="section-label">🌙 NIGHT ROUTINE</span>
+    ${PRODUCTS.pm.map(p=>{
+      const ch=!!tlog[p.id];
+      const rest=(p.id==="sal"&&!plan.sal)||(p.id==="retinol"&&!plan.retinol);
+      return `<div class="check-item${ch?" checked":""}${rest?" disabled":""}" ${rest?"":"data-toggle=\""+p.id+"\""}">
+        <div class="check-circle${ch?" checked":""}">${ch?"✓":""}</div>
+        <div style="flex:1">
+          <div class="check-name${ch?" checked":""}">${p.emoji} ${p.name}</div>
+          ${ch?`<div class="check-tip">${p.tip}</div>`:""}
+        </div>
+        ${rest?`<span class="not-tonight">not tonight</span>`:""}
+      </div>
+      ${rest?`<div style="font-size:10px;color:#444;padding-left:14px;margin-bottom:6px">⛔ Not scheduled tonight</div>`:""}`;
+    }).join("")}
+  </div>
+
+  <div class="card" style="text-align:center;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:12px;color:#666">Today's Completion</span>
+      <span style="font-size:12px;font-weight:600;color:#c9a96e">${ts}%</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${ts}%"></div></div>
+    <div style="font-size:11px;color:#555;margin-top:10px">
+      ${ts===100?"🌟 Perfect day! Your future skin thanks you.":ts>=50?"💪 Great — finish strong!":"🌱 Let's get started!"}
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-ghost" id="photoBtn">📸 Add Photo</button>
+    <button class="btn-ghost" id="noteBtn">📝 Log Skin</button>
+  </div>
+
+  ${state.showPhoto?`<div class="card gold" style="margin-top:12px">
+    <div style="font-size:12px;color:#c9a96e;margin-bottom:6px">Week ${wk} Progress Photo</div>
+    <div style="font-size:11px;color:#666;margin-bottom:12px">Same lighting & angle each week for best comparison</div>
+    <input type="file" id="photoFile" accept="image/*" capture="user" style="display:none"/>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="takePhotoBtn" style="flex:1;margin:0">📷 Take / Choose Photo</button>
+      <button class="btn-ghost" id="cancelPhotoBtn">Cancel</button>
+    </div>
+  </div>`:""}
+
+  ${state.showNote?`<div class="card" style="margin-top:12px">
+    <div style="font-size:10px;color:#c9a96e;letter-spacing:2px;margin-bottom:12px">TODAY'S SKIN LOG</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#666;margin-bottom:6px">Oiliness</div>
+      <div class="rating-row">
+        ${[1,2,3,4,5].map(n=>`<button class="rating-btn${state.oilRating===n?" active":""}" data-oil="${n}"
+          style="${state.oilRating===n?"border-color:#c9a96e;background:rgba(201,169,110,0.13);color:#c9a96e":""}">${n}</button>`).join("")}
+      </div>
+      <div class="rating-hint"><span>Dry</span><span>Very Oily</span></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#666;margin-bottom:6px">Glow</div>
+      <div class="rating-row">
+        ${[1,2,3,4,5].map(n=>`<button class="rating-btn${state.glowRating===n?" active":""}" data-glow="${n}"
+          style="${state.glowRating===n?"border-color:#7eb8a0;background:rgba(126,184,160,0.13);color:#7eb8a0":""}">${n}</button>`).join("")}
+      </div>
+      <div class="rating-hint"><span>Dull</span><span>Glowing</span></div>
+    </div>
+    <textarea class="inp" id="noteTextarea" placeholder="Any breakouts, irritation, or observations...">${state.noteText}</textarea>
+    <button class="btn" id="saveNoteBtn">Save Log</button>
+  </div>`:""}`;
+}
+
+function buildProgress(today,wk,days,str,avg,unlocked){
+  const last7=Array.from({length:7},(_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-(6-i));
+    const k=d.toISOString().split("T")[0];
+    return{k,lbl:["Su","Mo","Tu","We","Th","Fr","Sa"][d.getDay()],sc:scoreOf(state.logs[k])};
+  });
+  const heatmap=Array.from({length:28},(_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-(27-i));
+    const k=d.toISOString().split("T")[0],sc=scoreOf(state.logs[k]);
+    const bg=sc>=80?"#c9a96e":sc>=50?"rgba(201,169,110,0.4)":sc>0?"rgba(201,169,110,0.15)":"rgba(255,255,255,0.04)";
+    return`<div class="heat-cell" style="background:${bg}" title="${sc}%"></div>`;
+  });
+  const photoList=Object.values(state.photos).sort((a,b)=>a.week-b.week);
+
+  return `
+  <div class="section">
+    <span class="section-label">LAST 7 DAYS</span>
+    <div class="bar-chart">
+      ${last7.map(({k,lbl,sc})=>`<div class="bar-col">
+        <div class="bar-pct">${sc>0?sc+"%":""}</div>
+        <div class="bar" style="height:${Math.max(sc*0.65,5)}px;background:${sc>0?"rgba(201,169,110,"+(0.15+sc/100*0.7)+")":"rgba(255,255,255,0.04)"};${k===today?"border:1px solid #c9a96e":""}"></div>
+        <div class="bar-lbl" style="color:${k===today?"#c9a96e":"#444"}">${lbl}</div>
+      </div>`).join("")}
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="section-label">28-DAY CONSISTENCY</span>
+    <div class="heatmap">${heatmap.join("")}</div>
+    <div class="heat-legend">
+      <span>Less</span>
+      ${["rgba(255,255,255,0.04)","rgba(201,169,110,0.15)","rgba(201,169,110,0.4)","#c9a96e"].map(bg=>`<div class="heat-box" style="background:${bg}"></div>`).join("")}
+      <span>More</span>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    ${[
+      {lbl:"Days Active",val:Object.keys(state.logs).length,icon:"📅",col:"#c9a96e"},
+      {lbl:"Streak",     val:str+" days",                   icon:"🔥",col:"#c97eb8"},
+      {lbl:"Avg Score",  val:avg+"%",                       icon:"📊",col:"#7eb8a0"},
+      {lbl:"Projected",  val:avg>=80?"🌟 High":avg>=50?"✨ Growing":"🌱 Building",icon:"💡",col:"#b8c97e"},
+    ].map(s=>`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.col}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join("")}
+  </div>
+
+  <div class="section">
+    <span class="section-label">12-WEEK MILESTONES</span>
+    ${MILESTONES.map(m=>{
+      const done=wk>=m.week,cur=wk===m.week;
+      return`<div class="milestone${done?"":" locked"}">
+        <div class="ms-circle${done?" done":" "}">${done?m.icon:"○"}</div>
+        <div style="flex:1;padding-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="ms-title${done?" done":""}">${m.title}${cur?`<span class="now-badge">NOW</span>`:""}</div>
+            <span class="ms-week">Wk ${m.week}</span>
+          </div>
+          <div class="ms-desc">${m.desc}</div>
+          ${done?`<span class="ms-badge">${m.badge}</span>`:""}
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+
+  <div class="section">
+    <span class="section-label">BADGES — ${unlocked.length}/${BADGES.length} UNLOCKED</span>
+    <div class="badge-grid">
+      ${BADGES.map(b=>{
+        const on=unlocked.some(u=>u.id===b.id);
+        return`<div class="badge-card${on?" unlocked":""}">
+          <div class="badge-icon">${b.icon}</div>
+          <div>
+            <div class="badge-name${on?" unlocked":""}">${b.label}</div>
+            <div class="badge-desc">${b.desc}</div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>
+
+  <div>
+    <span class="section-label">📸 PHOTO JOURNAL</span>
+    ${photoList.length===0
+      ?`<div class="card empty-state"><div class="empty-icon">📸</div><div class="empty-text">No progress photos yet.<br>Add one from the Today tab each week!</div></div>`
+      :`<div class="photo-grid">${photoList.map(p=>`<div class="photo-item"><img src="${p.src}" alt="Wk ${p.week}"/><div class="photo-wk">Wk ${p.week}</div></div>`).join("")}</div>`
+    }
+  </div>`;
+}
+
+function buildLog(){
+  const list=Object.entries(state.notes).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!list.length) return`<span class="section-label">SKIN DIARY</span>
+    <div class="card empty-state"><div class="empty-icon">📝</div><div class="empty-text">No skin logs yet.<br>Log from the Today tab each day.</div></div>`;
+  return`<span class="section-label">SKIN DIARY</span>
+    ${list.map(([date,n])=>`<div class="card note-diary">
+      <div style="font-size:11px;color:#c9a96e;margin-bottom:10px">${new Date(date).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div>
+      <div style="display:flex;gap:20px;margin-bottom:10px">
+        <div><div style="font-size:10px;color:#666;margin-bottom:4px">Oiliness</div><div class="dot-row">${[1,2,3,4,5].map(i=>`<div class="dot" style="background:${i<=n.oil?"#c9a96e":"rgba(255,255,255,0.08)"}"></div>`).join("")}</div></div>
+        <div><div style="font-size:10px;color:#666;margin-bottom:4px">Glow</div><div class="dot-row">${[1,2,3,4,5].map(i=>`<div class="dot" style="background:${i<=n.glow?"#7eb8a0":"rgba(255,255,255,0.08)"}"></div>`).join("")}</div></div>
+      </div>
+      ${n.text?`<div style="font-size:12px;color:#888;line-height:1.5">${n.text}</div>`:""}
+    </div>`).join("")}`;
+}
+
+function buildChecker(){
+  const cr=state.conflictResult;
+  return`<span class="section-label">🧪 INGREDIENT CONFLICT CHECKER</span>
+  <div style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.5">Type any ingredient to check for conflicts with your current routine.</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <input class="inp" id="conflictInp" value="${state.conflictInput}" placeholder="e.g. glycolic acid, aha, retinol..." style="flex:1"/>
+    <button class="btn" id="conflictBtn" style="width:auto;margin:0;padding:11px 18px">Check</button>
+  </div>
+  ${cr===null?"":cr===undefined?"":cr?
+    `<div class="conflict-err">
+      <div style="font-size:13px;color:#e07070;font-weight:600;margin-bottom:8px">⚠️ Conflicts Found</div>
+      <div style="font-size:12px;color:#999;margin-bottom:10px"><b style="color:#f0e6d3">${cr.found}</b> conflicts with:</div>
+      ${cr.list.map(c=>`<div class="conflict-item"><span>❌</span><span>${c}</span></div>`).join("")}
+      <div class="conflict-tip">💡 Use conflicting ingredients on alternate nights, or one AM / one PM. Never layer together.</div>
+    </div>`:
+    `<div class="conflict-ok">
+      <div style="font-size:13px;color:#70e090;font-weight:600;margin-bottom:6px">✅ Safe to Use!</div>
+      <div style="font-size:12px;color:#888">No conflicts found. Always patch test new products first.</div>
+    </div>`
+  }
+  <div style="margin-top:8px">
+    <span class="section-label">YOUR ACTIVE INGREDIENTS</span>
+    ${[
+      {name:"Vitamin C (16%)",   time:"AM only",    note:"Brightening, antioxidant",col:"#c9a96e"},
+      {name:"Salicylic Acid (2%)",time:"PM 2-3x/wk",note:"Pore clearing, anti-acne", col:"#c97eb8"},
+      {name:"Retinol (0.3%)",    time:"PM 3-4x/wk", note:"Anti-aging, cell turnover",col:"#b8c97e"},
+    ].map(i=>`<div class="card" style="margin-bottom:8px">
+      <div class="ingredient-row">
+        <div><div class="ing-name">${i.name}</div><div class="ing-note">${i.note}</div></div>
+        <span class="ing-tag" style="color:${i.col};border:1px solid ${i.col}44;background:${i.col}11">${i.time}</span>
+      </div>
+    </div>`).join("")}
+  </div>`;
+}
+
+function buildSchedule(today){
+  return`<span class="section-label">WEEKLY SCHEDULE</span>
+  ${DAYS.map(d=>{
+    const p=WEEKLY[d],it=d===today;
+    return`<div class="week-row ${it?"today":"other"}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center">
+          <span class="week-day" style="color:${it?"#c9a96e":"#f0e6d3"}">${d}</span>
+          ${it?`<span class="today-pill">TODAY</span>`:""}
+        </div>
+        <span class="week-label">${p.label}</span>
+      </div>
+      <div class="week-tags">
+        ${["Cleanser","Vit C","Moisturiser","SPF"].map(t=>`<span class="wtag" style="color:#7eb8a0;border:1px solid #7eb8a044;background:#7eb8a011">${t}</span>`).join("")}
+        ${p.sal?`<span class="wtag" style="color:#c97eb8;border:1px solid #c97eb844;background:#c97eb811">Salicylic</span>`:""}
+        ${p.retinol?`<span class="wtag" style="color:#c9a96e;border:1px solid #c9a96e44;background:#c9a96e11">Retinol</span>`:""}
+        ${!p.sal&&!p.retinol?`<span class="wtag" style="color:#555;background:rgba(255,255,255,0.04)">Rest Night</span>`:""}
+      </div>
+    </div>`;
+  }).join("")}
+  <div style="margin-top:24px">
+    <span class="section-label">GOLDEN RULES</span>
+    ${RULES.map(([icon,rule])=>`<div class="rule-row"><span class="rule-icon">${icon}</span><span class="rule-text">${rule}</span></div>`).join("")}
+  </div>`;
+}
+
+function buildEdit(){
+  const emojis=["🧼","✨","💧","☀️","🔬","🌙","🧴","💊","🌿","🫧","🧪","💆","🌸","🍃","⚗️"];
+  function productRow(p,session,idx){
+    return`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <select data-emoji="${session}-${idx}" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 8px;color:#f0e6d3;font-size:16px;outline:none;cursor:pointer">
+          ${emojis.map(e=>`<option value="${e}" ${e===p.emoji?"selected":""}>${e}</option>`).join("")}
+        </select>
+        <input data-name="${session}-${idx}" value="${p.name}" placeholder="Product name"
+          style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;color:#f0e6d3;font-size:13px;outline:none"/>
+        <button data-remove="${session}-${idx}" style="background:rgba(201,100,100,0.1);border:1px solid rgba(201,100,100,0.2);border-radius:8px;padding:6px 10px;color:#e07070;font-size:12px;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+      <input data-tip="${session}-${idx}" value="${p.tip}" placeholder="Usage tip (optional)"
+        style="width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;color:#888;font-size:11px;outline:none"/>
+    </div>`;
+  }
+
+  return`
+  <span class="section-label">✏️ EDIT YOUR ROUTINE</span>
+  <div style="font-size:12px;color:#555;margin-bottom:20px;line-height:1.5">
+    Add, remove or rename products in your AM and PM routine. Changes save instantly.
+  </div>
+
+  <!-- AM Section -->
+  <div style="margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:10px;color:#7eb8a0;letter-spacing:2px">☀️ MORNING ROUTINE</span>
+      <button id="addAmBtn" style="font-size:11px;background:rgba(126,184,160,0.1);border:1px solid rgba(126,184,160,0.25);border-radius:8px;padding:5px 12px;color:#7eb8a0;cursor:pointer">+ Add Step</button>
+    </div>
+    <div id="amList">
+      ${PRODUCTS.am.map((p,i)=>productRow(p,"am",i)).join("")}
+    </div>
+  </div>
+
+  <!-- PM Section -->
+  <div style="margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:10px;color:#c9a96e;letter-spacing:2px">🌙 NIGHT ROUTINE</span>
+      <button id="addPmBtn" style="font-size:11px;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:5px 12px;color:#c9a96e;cursor:pointer">+ Add Step</button>
+    </div>
+    <div id="pmList">
+      ${PRODUCTS.pm.map((p,i)=>productRow(p,"pm",i)).join("")}
+    </div>
+  </div>
+
+  <!-- Reset -->
+  <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;margin-top:8px">
+    <button id="resetRoutineBtn" style="width:100%;background:rgba(201,100,100,0.06);border:1px solid rgba(201,100,100,0.2);border-radius:10px;padding:11px;color:#e07070;font-size:13px;cursor:pointer">
+      🔄 Reset to Default Routine
+    </button>
+    <div style="font-size:10px;color:#444;text-align:center;margin-top:8px">Restores Garvit's original recommended routine</div>
+  </div>`;
+}
+
+// ── Edit Event Helpers ────────────────────────────────────────────────────────
+function saveProducts(){save("sj_products",PRODUCTS);}
+
+function attachEditEvents(){
+  // Emoji change
+  document.querySelectorAll("[data-emoji]").forEach(el=>{
+    el.addEventListener("change",e=>{
+      const[session,idx]=el.dataset.emoji.split("-");
+      PRODUCTS[session][parseInt(idx)].emoji=e.target.value;
+      saveProducts();
+    });
+  });
+  // Name change
+  document.querySelectorAll("[data-name]").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const[session,idx]=el.dataset.name.split("-");
+      PRODUCTS[session][parseInt(idx)].name=e.target.value;
+      saveProducts();
+    });
+  });
+  // Tip change
+  document.querySelectorAll("[data-tip]").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const[session,idx]=el.dataset.tip.split("-");
+      PRODUCTS[session][parseInt(idx)].tip=e.target.value;
+      saveProducts();
+    });
+  });
+  // Remove
+  document.querySelectorAll("[data-remove]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const[session,idx]=el.dataset.remove.split("-");
+      PRODUCTS[session].splice(parseInt(idx),1);
+      saveProducts();
+      setState({notif:{title:"🗑️ Removed",msg:"Product removed from routine"}});
+      setTimeout(()=>setState({notif:null}),2000);
+    });
+  });
+  // Add AM
+  const addAm=document.getElementById("addAmBtn");
+  if(addAm) addAm.addEventListener("click",()=>{
+    const id="custom_am_"+Date.now();
+    PRODUCTS.am.push({id,name:"New Product",emoji:"🧴",tip:"Add your usage tip here"});
+    saveProducts();
+    setState({notif:{title:"✅ Added",msg:"New AM step added — tap to edit"}});
+    setTimeout(()=>setState({notif:null}),2000);
+  });
+  // Add PM
+  const addPm=document.getElementById("addPmBtn");
+  if(addPm) addPm.addEventListener("click",()=>{
+    const id="custom_pm_"+Date.now();
+    PRODUCTS.pm.push({id,name:"New Product",emoji:"🧴",tip:"Add your usage tip here"});
+    saveProducts();
+    setState({notif:{title:"✅ Added",msg:"New PM step added — tap to edit"}});
+    setTimeout(()=>setState({notif:null}),2000);
+  });
+  // Reset
+  const resetBtn=document.getElementById("resetRoutineBtn");
+  if(resetBtn) resetBtn.addEventListener("click",()=>{
+    if(confirm("Reset to default routine? Your edits will be lost.")){
+      PRODUCTS=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      localStorage.removeItem("sj_products");
+      setState({notif:{title:"🔄 Reset!",msg:"Routine restored to defaults"}});
+      setTimeout(()=>setState({notif:null}),2000);
+    }
+  });
+}
+
+
+function attachEvents(){
+  // Onboard
+  const beginBtn=document.getElementById("beginBtn");
+  if(beginBtn){
+    document.getElementById("startInp").addEventListener("change",e=>setState({start:e.target.value}));
+    beginBtn.addEventListener("click",()=>{save("sj_start",state.start);setState({screen:"app"});});
+  }
+
+  // Tabs
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click",()=>setState({tab:t.dataset.tab,conflictResult:undefined}));
+  });
+
+  // Date picker
+  const datePicker=document.getElementById("datePicker");
+  if(datePicker) datePicker.addEventListener("change",e=>setState({activeDate:e.target.value,showPhoto:false,showNote:false}));
+  const goTodayBtn=document.getElementById("goTodayBtn");
+  if(goTodayBtn) goTodayBtn.addEventListener("click",()=>setState({activeDate:todayKey()}));
+
+  // Reminder btn
+  const remBtn=document.getElementById("remBtn");
+  if(remBtn) remBtn.addEventListener("click",()=>setState({showRem:!state.showRem}));
+
+  const remAM=document.getElementById("remAMinp"),remPM=document.getElementById("remPMinp");
+  if(remAM) remAM.addEventListener("change",e=>{state.remAM=e.target.value;save("sj_remAM",e.target.value);});
+  if(remPM) remPM.addEventListener("change",e=>{state.remPM=e.target.value;save("sj_remPM",e.target.value);});
+
+  // Check items
+  document.querySelectorAll("[data-toggle]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const id=el.dataset.toggle,activeDate=state.activeDate||todayKey();
+      const day=state.logs[activeDate]||{};
+      const logs={...state.logs,[activeDate]:{...day,[id]:!day[id]}};
+      save("sj_logs",logs);
+      setState({logs,justChecked:id});
+      setTimeout(()=>setState({justChecked:null}),500);
+    });
+  });
+
+  // Photo
+  const photoBtn=document.getElementById("photoBtn");
+  if(photoBtn) photoBtn.addEventListener("click",()=>setState({showPhoto:!state.showPhoto}));
+  const takeBtn=document.getElementById("takePhotoBtn");
+  if(takeBtn) takeBtn.addEventListener("click",()=>document.getElementById("photoFile").click());
+  const cancelPhoto=document.getElementById("cancelPhotoBtn");
+  if(cancelPhoto) cancelPhoto.addEventListener("click",()=>setState({showPhoto:false}));
+  const photoFile=document.getElementById("photoFile");
+  if(photoFile) photoFile.addEventListener("change",e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const activeDate=state.activeDate||todayKey(),wk=weekNum(state.start);
+      const photos={...state.photos,[activeDate]:{src:ev.target.result,week:wk,date:activeDate}};
+      save("sj_photos",photos);
+      setState({photos,showPhoto:false,notif:{title:"📸 Saved!",msg:"Week "+wk+" photo captured"}});
+      setTimeout(()=>setState({notif:null}),4000);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Note
+  const noteBtn=document.getElementById("noteBtn");
+  if(noteBtn) noteBtn.addEventListener("click",()=>setState({showNote:!state.showNote}));
+  document.querySelectorAll("[data-oil]").forEach(b=>{
+    b.addEventListener("click",()=>setState({oilRating:parseInt(b.dataset.oil)}));
+  });
+  document.querySelectorAll("[data-glow]").forEach(b=>{
+    b.addEventListener("click",()=>setState({glowRating:parseInt(b.dataset.glow)}));
+  });
+  const ntxt=document.getElementById("noteTextarea");
+  if(ntxt) ntxt.addEventListener("input",e=>state.noteText=e.target.value);
+  const saveNote=document.getElementById("saveNoteBtn");
+  if(saveNote) saveNote.addEventListener("click",()=>{
+    const text=state.noteText.trim();
+    if(!text)return;
+    const activeDate=state.activeDate||todayKey();
+    const notes={...state.notes,[activeDate]:{text,oil:state.oilRating,glow:state.glowRating,date:activeDate}};
+    save("sj_notes",notes);
+    setState({notes,showNote:false,noteText:"",notif:{title:"📝 Saved!",msg:"Daily skin log recorded"}});
+    setTimeout(()=>setState({notif:null}),4000);
+  });
+
+  // Conflict checker
+  const cinp=document.getElementById("conflictInp");
+  if(cinp){
+    cinp.addEventListener("input",e=>state.conflictInput=e.target.value);
+    cinp.addEventListener("keydown",e=>{if(e.key==="Enter"){const r=conflictCheck(state.conflictInput);setState({conflictResult:r===null?null:r});}});
+  }
+  const cBtn=document.getElementById("conflictBtn");
+  if(cBtn) cBtn.addEventListener("click",()=>{
+    const r=conflictCheck(state.conflictInput);
+    setState({conflictResult:r===null?null:r});
+  });
+
+  // Edit tab
+  if(state.tab==="edit") attachEditEvents();
+}
+
+// ── Reminders ─────────────────────────────────────────────────────────────────
+setInterval(()=>{
+  const now=new Date();
+  const cur=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
+  if(cur===state.remAM) setState({notif:{title:"☀️ Morning Routine!",msg:"Time for your AM skincare."}});
+  if(cur===state.remPM) setState({notif:{title:"🌙 Night Routine!",msg:"Time for your PM skincare."}});
+},60000);
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
